@@ -1,0 +1,206 @@
+import pandas as pd
+import numpy as np
+import sklearn
+from sklearn.neighbors import KNeighborsClassifier
+# Import LabelEncoder
+from sklearn import preprocessing
+
+#Finishing=55, Dribbling=59, SprintSpeed=65, Positioning=76
+'Independent Variables: Overall, Finishing, Dribbling, SprintSpeed, Positioning'
+'Depdent Variable: Elite binary calssification 1=elite 0=Non-elite'
+
+df = pd.read_csv('BinaryElite.csv')
+
+'Features'
+#names = df.iloc[:,2].tolist()[:221]
+#indexs 10984-10,998 and others have no data from FIFA --> 29 players without
+#4-age, 6-nationality, 10-club, 22-position, 23-jersey#, 27-height, 28-weight
+
+badValuesDex = [1392,1597,2092,2467,4190,5098,5970,6332,6867,7349,7884,8338,9073,10984,
+               10985,10986,10987,10988,10989,10990,10991,10992,10993,10994,10995,
+               10996,10997,10998,10999]
+
+lst1 = df.iloc[:,7].tolist()  #Overall
+lst2 = df.iloc[:,55].tolist() #Finish
+drib = df.iloc[:,59].tolist() #Dribbling
+spee = df.iloc[:,65].tolist() #SprintSpeed
+posi = df.iloc[:,76].tolist() #Positioning (NOT forward,goalie...but where to be and when)
+
+age = df.iloc[:,4].tolist() #Age
+nati = df.iloc[:,6].tolist() #Nationality
+height = df.iloc[:,27].tolist() #Height
+weight = df.iloc[:,28].tolist() #Weight --> lbs
+
+
+jersey = df.iloc[:,23].tolist() #Jersey#
+club = df.iloc[:,10].tolist() #Club
+Position = df.iloc[:,22].tolist() #Position on the field
+
+for i in range(len(lst1)):
+    if i in badValuesDex:
+        lst2[i] = 0
+        drib[i] = 0
+        spee[i] = 0
+        posi[i] = 0
+        age[i] = 0
+        nati[i] = 0
+        height[i] = 0
+        weight[i] = 0
+        jersey[i] = 100
+        club[i] = 100
+        Position[i] = 100
+
+'All Relevant Features'
+#lst1 
+#lst2 
+#drib 
+#spee 
+#posi
+        
+#age
+#nati
+#height 
+#weight 
+
+#jersey
+#club 
+#Position 
+
+#creating labelEncoder if needs to be encoded
+le = preprocessing.LabelEncoder()
+jersey_e = le.fit_transform(jersey)
+club_e = le.fit_transform(club)
+Position_e = le.fit_transform(Position)
+
+#Zip relevant features together
+'Elite'
+features_eliteMin = list(zip(lst1[:442],lst2[:442],drib[:442],spee[:442],posi[:442], club_e[:442], Position_e[:442]))
+
+'Elite + High Train'
+features_elitePlus = list(zip(lst1[:8500],lst2[:8500],drib[:8500],spee[:8500],posi[:8500], club_e[:8500], Position_e[:8500]))
+
+'Most'
+features_most = list(zip(lst1[:13000],lst2[:13000],drib[:13000],spee[:13000],posi[:13000], club_e[:13000], Position_e[:13000]))
+
+'All'
+features_all = list(zip(lst1,lst2,drib,spee,posi, club_e, Position_e))
+
+
+'Elite Labels'
+elite_eliteMin = df.iloc[:,-1].tolist()[:442]
+elite_elitePlus = df.iloc[:,-1].tolist()[:8500]
+elite_most = df.iloc[:,-1].tolist()[:13000]
+elite_all = df.iloc[:,-1].tolist()
+
+# 8-1 Neighbors based on 7 input features
+
+model_eliteMin = KNeighborsClassifier(n_neighbors=8)
+model_elitePlus = KNeighborsClassifier(n_neighbors=8)
+model_most = KNeighborsClassifier(n_neighbors=8)
+model_all = KNeighborsClassifier(n_neighbors=8)
+
+
+# Train the model using the training sets
+model_eliteMin.fit(features_eliteMin, elite_eliteMin)
+model_elitePlus.fit(features_elitePlus, elite_elitePlus)
+model_most.fit(features_most, elite_most)
+model_all.fit(features_all, elite_all)
+
+#Predict Output for testing purposes
+#Overall, Finishing, Dribbling, SprintSpeed, Positioning, Club encoding, Position encoding
+
+predicted = model_eliteMin.predict([[60,70,60,49,80,1,4]])
+print(predicted)
+predicted = model_elitePlus.predict([[90,70,85,90,80,2,3]])
+print(predicted)
+predicted = model_most.predict([[90,70,60,49,80,5,1]])
+print(predicted)
+predicted = model_all.predict([[90,70,60,49,80,6,2]])
+print(predicted)
+
+# Import train_test_split function
+from sklearn.model_selection import train_test_split
+
+# Split dataset into training set and test set
+# Split training by 35%, 50%, 60% for each
+
+'(1) eliteMin (2) elitePlus (3) most (4) all'
+'Uncomment # to see other random train and test sizings'
+
+'(1) eliteMin'
+X_train, X_test, y_train, y_test = train_test_split(features_eliteMin, elite_eliteMin, test_size=0.35) # 35% training and 65% test
+#X_train, X_test, y_train, y_test = train_test_split(features_eliteMin, elite_eliteMin, test_size=0.5) # 50% training and 50% test
+#X_train, X_test, y_train, y_test = train_test_split(features_eliteMin, elite_eliteMin, test_size=0.6) # 60% training and 40% test
+
+#Create KNN Classifier
+knn = KNeighborsClassifier(n_neighbors=8) #Classify based on elite on not
+#Train the model using the training sets
+knn.fit(X_train, y_train)
+#Predict the response for test dataset
+y_pred = knn.predict(X_test)
+
+#Import scikit-learn metrics module for accuracy calculation
+from sklearn import metrics
+# Model Accuracy, how often is the classifier correct?
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+'(2) elitePlus'
+X_train, X_test, y_train, y_test = train_test_split(features_elitePlus, elite_elitePlus, test_size=0.35) # 35% training and 65% test
+#X_train, X_test, y_train, y_test = train_test_split(features_elitePlus, elite_elitePlus, test_size=0.5) # 50% training and 50% test
+#X_train, X_test, y_train, y_test = train_test_split(features_elitePlus, elite_elitePlus, test_size=0.6) # 60% training and 40% test
+
+knn = KNeighborsClassifier(n_neighbors=8) #Classify based on elite on not
+knn.fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+'(3) most'
+X_train, X_test, y_train, y_test = train_test_split(features_most, elite_most, test_size=0.35) # 35% training and 65% test
+#X_train, X_test, y_train, y_test = train_test_split(features_most, elite_most, test_size=0.5) # 50% training and 50% test
+#X_train, X_test, y_train, y_test = train_test_split(features_most, elite_most, test_size=0.6) # 60% training and 40% test
+
+knn = KNeighborsClassifier(n_neighbors=8) #Classify based on elite on not
+knn.fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+'(4) all'
+X_train, X_test, y_train, y_test = train_test_split(features_all, elite_all, test_size=0.35) # 35% training and 65% test
+#X_train, X_test, y_train, y_test = train_test_split(features_all, elite_all, test_size=0.5) # 50% training and 50% test
+#X_train, X_test, y_train, y_test = train_test_split(features_all, elite_all, test_size=0.6) # 60% training and 40% test
+
+knn = KNeighborsClassifier(n_neighbors=8) #Classify based on elite on not
+knn.fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+FIFA Elite Naive Bayes Classifier
+
+#Import Gaussian Naive Bayes model
+from sklearn.naive_bayes import GaussianNB
+
+#Create a Gaussian Classifiers
+gnb1 = GaussianNB()
+gnb2 = GaussianNB()
+gnb3 = GaussianNB()
+gnb4 = GaussianNB()
+
+X_train, X_test, y_train, y_test = train_test_split(features_eliteMin, elite_eliteMin, test_size=0.35) # 35% training and 65% test
+gnb1.fit(X_train, y_train)
+y_pred = gnb1.predict(X_test)
+print("eliteMin Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+X_train, X_test, y_train, y_test = train_test_split(features_elitePlus, elite_elitePlus, test_size=0.35) # 35% training and 65% test
+gnb2.fit(X_train, y_train)
+y_pred = gnb2.predict(X_test)
+print("elitePlus Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+X_train, X_test, y_train, y_test = train_test_split(features_most, elite_most, test_size=0.35) # 35% training and 65% test
+gnb3.fit(X_train, y_train)
+y_pred = gnb.predict(X_test)
+print("most Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+X_train, X_test, y_train, y_test = train_test_split(features_all, elite_all, test_size=0.35) # 35% training and 65% test
+gnb4.fit(X_train, y_train)
+y_pred = gnb4.predict(X_test)
+print("all Accuracy:",metrics.accuracy_score(y_test, y_pred))

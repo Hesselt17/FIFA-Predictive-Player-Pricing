@@ -1,0 +1,98 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(gridExtra)
+library(lattice)
+library(arm)
+library(pROC)
+library(car)
+library(multcomp)
+library(ggplot2)
+```
+
+```{r FIFA}
+setwd("/Users/cjkeim/Desktop")
+FIFAData = read.csv("/Users/cjkeim/Desktop/finalDatafinally.csv", header = TRUE)
+head(FIFAData)
+NROW(FIFAData)
+NCOL(FIFAData)
+```
+
+```{r FIFA}
+setwd("/Users/cjkeim/Desktop")
+saraData = read.csv("/Users/cjkeim/Desktop/saraData2.csv", header = TRUE)
+head(saraData)
+
+# set elite == 1
+
+FIFADataEliteTeam <- filter(saraData, Club %in% c("Real Madrid", "Paris Saint-Germain", "FC Barcelona", "Atletico Madrid", "Chelsea", "Manchester City", "Tottenham Hotspur", "Manchester City", "Manchester United", "Liverpool", "other"))
+
+FIFADataEliteTeam$Club[FIFADataEliteTeam$Club == "other"] <- "Other"
+
+
+plotFIFADataEliteTeam <- ggplot(data = FIFADataEliteTeam, aes(y = log(FUT.Price), x = Club, col = Club)) +
+  geom_boxplot() +
+  labs(x = "Club", y = "Log FUT Market Price", title = "Club vs. Log FUT Market Price")
+plotFIFADataEliteTeam
+```
+
+```{r FIFA}
+setwd("/Users/cjkeim/Desktop")
+FIFADataAvgs = read.csv("/Users/cjkeim/Desktop/FinalDataAvgs.csv", header = TRUE)
+head(FIFADataAvgs)
+
+FIFADataElite = read.csv("/Users/cjkeim/Desktop/elite.csv", header = TRUE)
+head(FIFADataElite)
+
+#FUT.Price
+lmRegElite = lm(FUT.Price ~ Crossing + Finishing + Dribbling + BallControl + Acceleration + SprintSpeed + Agility + ShotPower + Overall, data=FIFADataElite)
+
+logRegElite = lm(log(FUT.Price) ~ Crossing + Finishing + Dribbling + BallControl + Acceleration + SprintSpeed + Agility + ShotPower + Overall, data=FIFADataElite)
+
+logRegElite2 = lm(log(FUT.Price) ~ SprintSpeed + Overall, data=FIFADataElite)
+
+summary(lmRegElite)
+summary(logRegElite)
+summary(logRegElite2)
+
+plotOne <- ggplot(FIFADataElite, aes(x = Overall, y = log(FUT.Price))) + 
+  geom_point(color = "purple") + 
+  labs(x = "Overall Rating", y = "FUT Market Price", title = "Overall Rating vs. FUT Market Price") +
+  geom_smooth(method = "lm")
+plotOne
+
+plotTwo <- ggplot(FIFADataElite, aes(x = SprintSpeed, y = log(FUT.Price))) + 
+  geom_point(color = "purple") + 
+  labs(x = "Sprint Speed", y = "FUT Market Price", title = "Sprint Speed vs. FUT Market Price") +
+  geom_smooth(method = "lm")
+plotTwo
+```
+
+plotOg <- ggplot(FIFADataNZP, aes(x = Overall, y = FUT.Price)) + 
+  geom_point(color = "purple") + 
+  labs(x = "Overall Rating", y = "FUT Market Price", title = "Overall Rating vs. FUT Market Price")
+plotOg
+
+plotLog <- ggplot(FIFADataNZP, aes(x = Overall, y = log(FUT.Price))) + 
+  geom_point(color = "purple") + 
+  labs(x = "Overall Rating", y = "Log FUT Market Price", title = "Overall Rating vs. Log FUT Market Price")
+plotLog
+
+plotLogFinishing <- ggplot(FIFADataNZP, aes(x = Finishing, y = log(FUT.Price))) + 
+  geom_point(color = "blue") + 
+  labs(x = "Finishing", y = "Log FUT Market Price", title = "Finishing vs. Log FUT Market Price")
+plotLogFinishing
+
+plotPosition <- ggplot(data = FIFADataNZP, aes(y = log(FUT.Price), x = Position, col = Position)) +
+  geom_boxplot() +
+  labs(x = "Position", y = "Log FUT Market Price", title = "Position vs. Log FUT Market Price")
+plotPosition
+
+
+FIFADataNationality <- filter(FIFADataNZP, Nationality %in% c("Spain", "Portugal", "Brazil", "France", "Argentina", "Netherlands"))
+
+plotNationality <- ggplot(data = FIFADataNationality, aes(y = log(FUT.Price), x = Nationality, col = Nationality)) +
+  geom_boxplot() +
+  labs(x = "Nationality", y = "Log FUT Market Price", title = "Nationality vs. Log FUT Market Price")
+plotNationality
+```

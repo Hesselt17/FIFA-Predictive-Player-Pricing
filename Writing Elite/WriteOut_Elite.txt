@@ -1,0 +1,59 @@
+def assignElite():
+    import csv
+    
+    binaryElite = []
+    binaryNonElite = []
+    
+    with open('finalData averages.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        
+        
+        row1 = True
+        cutoff = 20000
+        
+        for row in csv_reader:
+            if (row1==True):
+                print (row)
+            if (row1==False):
+                'Value here sets the FUT price cutoff for an elite player'    
+                if (float(row[-1])>=cutoff):
+                    binaryElite.append(row[0])
+                else:
+                    binaryNonElite.append(row[0])
+            row1=False
+
+        print ('Elite cutoff is: $' + str(cutoff) + '.00')
+        print (len(binaryElite))
+        
+        
+        csv_file.seek(0)
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        
+        'Construct new column with 1 or 0' 
+        '1=Elite 0=Non-Elite and write out to csv'
+        with open('BinaryElite.csv', mode='w') as csv_file:
+            fd_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+            for row in csv_reader:
+                if (row[0]=='place'):
+                    row.append('elite')
+                if row[0] in binaryElite:
+                    row.append(1)
+                if row[0] in binaryNonElite:
+                    row.append(0)
+                fd_writer.writerow(row)
+
+
+def checkClassifier():
+    global elite
+    tempC = [t[1] for t in elite]
+    tempCJ = [t[2] for t in elite]
+    f = open("200PFUT.txt")
+    top200 = []
+    for row in f:
+        top200.append(row[:row.find('\n')])
+    f.close()
+    
+    inter = set(tempCJ) & set(top200)
+    #print (inter)
+    #print (len(inter))

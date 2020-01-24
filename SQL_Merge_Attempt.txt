@@ -1,0 +1,67 @@
+
+#Everything below was run in a jupiter notebook with 3 new lines denoting new py cells#
+
+import psycopg2
+import pandas as pd
+
+
+
+conn = psycopg2.connect("dbname=fifa") #Create fifa database
+cursor = conn.cursor()
+
+
+
+FIFA = """
+CREATE TABLE FIFA
+(ID1 varchar, ID2 varchar, NAME varchar, AGE varchar, PHOTO varchar, NATIONALITY varchar,
+FLAG varchar, OVERALL varchar, POTENTIAL varchar, CLUB varchar, CLUB_LOGO varchar, VALUE varchar,
+WAGE varchar, SPECIAL varchar, PREFERRED_FOOT varchar, INTERNATIONAL_REPUTATION varchar, WEAK_FOOT varchar, 
+SKILL_MOVES varchar, WORK_RATE varchar, BODY_TYPE varchar,REAL_FACE varchar, POSITION varchar, JERSEY_NUMBER varchar, 
+JOINED varchar, LOANED_FROM varchar, CONTRACT_VALID_UNTIL varchar, HEIGHT varchar, WEIGHT varchar, LS varchar, ST varchar, 
+RS varchar, LW varchar, LF varchar, CF varchar, RF varchar, RW varchar, LAM varchar, CAM varchar, RAM varchar, LM varchar, 
+LCM varchar, CM varchar, RCM varchar, RM varchar, LWB varchar, LDM varchar, CDM varchar, RDM varchar, RWB varchar, LB varchar, 
+LCB varchar, CB varchar, RCB varchar, RB varchar, CROSSING varchar, FINISHING varchar, HEADING_ACCURACY varchar, SHORT_PASSING varchar, 
+VOLLEYS varchar, DRIBBLING varchar, CURVE varchar, FKACCURACY varchar, LONG_PASSING varchar, BALL_CONTROL varchar, ACCELERATION varchar, 
+SPRINT_SPEED varchar, AGILITY varchar, REACTIONS varchar, BALANCE varchar, SHOT_POWER varchar, JUMPING varchar, STAMINA varchar, STRENGTH varchar, 
+LONG_SHOTS varchar, AGGRESSION varchar, INTERCEPTIONS varchar, POSITIONING varchar, VISION varchar, PENALTIES varchar, COMPOSURE varchar, MARKING varchar, 
+STANDIN_TACKLE varchar, SLIDING_TACKLE varchar, GK_DIVING varchar, GK_HANDING varchar, GK_KICKING varchar, GK_POSITIONING varchar, GK_REFLEXES varchar, 
+RELEASE_CLAUSE varchar
+);
+"""
+FIFA_FORMAT1 = """
+COPY FIFA FROM '/home/vcm/Project/dataXFIFA.csv' WITH (FORMAT csv);
+"""
+FIFA_FORMAT2= """
+DELETE FROM FIFA WHERE name='Name';
+"""
+pd.read_sql(FIFA, con=conn)
+pd.read_sql(FIFA_FORMAT1, con=conn)
+pd.read_sql(FIFA_FORMAT2, con=conn)
+
+
+
+FUT = """
+CREATE TABLE FUT
+(NAME varchar, PRICE varchar, CLUB varchar, COUNTRY varchar
+);
+"""
+#Change the path in the from section to where csv is
+FUT_FORMAT1 = """
+COPY FUT FROM '/home/vcm/Project/dataXFUT.csv' WITH (FORMAT csv);
+"""
+FUT_FORMAT2 = """
+DELETE FROM FUT WHERE name='Name';
+"""
+pd.read_sql(FUT, con=conn)
+pd.read_sql(FUT_FORMAT1, con=conn)
+pd.read_sql(FUT_FORMAT2, con=conn)
+
+
+
+connect = """
+select FIFA.name, FUT.country
+from FIFA
+inner join FUT
+on (FIFA.name ~ FUT.name AND FIFA.nationality ~ FUT.country);
+"""
+pd.read_sql(connect, con=conn)
